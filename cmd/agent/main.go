@@ -8,6 +8,7 @@ import (
 	"agent/internal/infrastructure/metrics"
 	"agent/internal/storage"
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -82,6 +83,8 @@ func main() {
 						continue
 					}
 
+					fmt.Println(dockerInfo)
+
 					select {
 					case dockerChan <- dockerInfo:
 					default:
@@ -94,6 +97,7 @@ func main() {
 						collectCancel()
 						continue
 					}
+					fmt.Println(networkTraffic)
 
 					select {
 					case networkChan <- networkTraffic:
