@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+env:
+  TAG_NAME: latest
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang llvm bpftool
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24'
+          cache: true
+
+      - name: Create build directory
+        run: mkdir -p build
+
+      - name: Build BPF program
+        working-directory: ./bpf
+        run: |
+          make
+          mkdir -p ../build/bpf
+          cp traffic_monitor.o ../build/bpf/
+
+      - name: Build Agent
+        run: |
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags="-w -s" -o build/agent ./cmd/agent
+
+      - name: Create archive
+        run: |
+          cd build
+          tar -czf monitoring-agent.tar.gz agent bpf/
+          cd ..
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{env.TAG_NAME}}
+          files: |
+            build/monitoring-agent.tar.gz

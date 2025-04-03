@@ -1,0 +1,8 @@
+service:
+  url: "http://localhost:8080"
+  update_interval: 60
+
+docker:
+  network: "bridge"
+  ignore_containers:
+    - "redis"
