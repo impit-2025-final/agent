@@ -6,6 +6,9 @@ on:
 env:
   TAG_NAME: latest
 
+permissions:
+  contents: write
+  
 jobs:
   build:
     runs-on: ubuntu-latest
