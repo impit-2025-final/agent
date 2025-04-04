@@ -215,6 +215,7 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 			Interface:     iface.Name,
 			SrcPort:       uint16(value.SrcPort),
 			DstPort:       uint16(value.DstPort),
+			LastUpdate:    int64(value.LastUpdate),
 		})
 	}
 

@@ -36,6 +36,7 @@ type NetworkTraffic struct {
 	ContainerName string `json:"container_name"`
 	SrcPort       uint16 `json:"src_port"`
 	DstPort       uint16 `json:"dst_port"`
+	LastUpdate    int64  `json:"last_update"`
 }
 
 type DockerCollector interface {
