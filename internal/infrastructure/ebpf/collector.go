@@ -154,10 +154,11 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 	}
 
 	var value struct {
-		Bytes   uint64
-		Packets uint64
-		SrcPort uint32
-		DstPort uint32
+		Bytes      uint64
+		Packets    uint64
+		SrcPort    uint32
+		DstPort    uint32
+		LastUpdate uint64
 	}
 
 	for iter.Next(&key, &value) {
