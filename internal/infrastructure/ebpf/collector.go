@@ -207,14 +207,14 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 			continue
 		}
 
-		exist, err := c.queueStorage.CheckNetworkTrafficeDuplicate(traffic)
-		if err != nil {
-			return nil, fmt.Errorf("error: %w", err)
-		}
+		// exist, err := c.queueStorage.CheckNetworkTrafficeDuplicate(traffic)
+		// if err != nil {
+		// 	return nil, fmt.Errorf("error: %w", err)
+		// }
 
-		if exist {
-			continue
-		}
+		// if exist {
+		// 	continue
+		// }
 
 		traffic = append(traffic, domain.NetworkTraffic{
 			SourceIP:      srcIP,
