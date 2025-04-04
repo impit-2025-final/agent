@@ -126,6 +126,7 @@ func (s *Sender) createRequest(ctx context.Context, method, url string, data []b
 		return nil, fmt.Errorf("error: %w", err)
 	}
 
+	body = &buf
 	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return nil, fmt.Errorf("error: %w", err)
