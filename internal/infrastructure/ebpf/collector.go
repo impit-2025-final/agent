@@ -17,6 +17,7 @@ import "C"
 import (
 	"agent/internal/domain"
 	"agent/internal/infrastructure/docker"
+	"agent/internal/storage"
 	"context"
 	"fmt"
 	"net"
@@ -35,11 +36,12 @@ type Collector struct {
 	mapObj          *ebpf.Map
 	links           []link.Link
 	dockerCollector *docker.Collector
+	queueStorage    *storage.QueueStorage
 	containerCache  map[string]domain.ContainerInfo
 	lastUpdate      time.Time
 }
 
-func NewCollector(dockerCollector *docker.Collector) (*Collector, error) {
+func NewCollector(dockerCollector *docker.Collector, queueStorage *storage.QueueStorage) (*Collector, error) {
 	spec, err := ebpf.LoadCollectionSpec("bpf/traffic_monitor.o")
 	if err != nil {
 		return nil, fmt.Errorf("error: %w", err)
@@ -64,6 +66,7 @@ func NewCollector(dockerCollector *docker.Collector) (*Collector, error) {
 		mapObj:          objs.TrafficMap,
 		links:           make([]link.Link, 0),
 		dockerCollector: dockerColl,
+		queueStorage:    queueStorage,
 		containerCache:  make(map[string]domain.ContainerInfo),
 		lastUpdate:      time.Time{},
 	}, nil
@@ -204,6 +207,15 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 			continue
 		}
 
+		exist, err := c.queueStorage.CheckNetworkTrafficeDuplicate(traffic)
+		if err != nil {
+			return nil, fmt.Errorf("error: %w", err)
+		}
+
+		if exist {
+			continue
+		}
+
 		traffic = append(traffic, domain.NetworkTraffic{
 			SourceIP:      srcIP,
 			DestinationIP: dstIP,
@@ -216,6 +228,7 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 			SrcPort:       uint16(value.SrcPort),
 			DstPort:       uint16(value.DstPort),
 			LastUpdate:    int64(value.LastUpdate),
+			RealTime:      time.Now().Unix(),
 		})
 	}
 

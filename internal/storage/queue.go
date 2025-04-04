@@ -89,6 +89,42 @@ func (s *QueueStorage) GetDockerInfoBatch() ([]*domain.DockerInfo, error) {
 	return batch, nil
 }
 
+func (s *QueueStorage) CheckNetworkTrafficeDuplicate(traffic []domain.NetworkTraffic) (exist bool, err error) {
+
+	files, err := filepath.Glob(filepath.Join(s.baseDir, "network_traffic_*.json"))
+	if err != nil {
+		return false, fmt.Errorf("error: %w", err)
+	}
+
+	sort.Strings(files)
+
+	for _, file := range files {
+		data, err := os.ReadFile(file)
+		if err != nil {
+			continue
+		}
+
+		var traffic []domain.NetworkTraffic
+		if err := json.Unmarshal(data, &traffic); err != nil {
+			continue
+		}
+
+		for _, t := range traffic {
+			if t.SourceIP == traffic[0].SourceIP &&
+				t.DestinationIP == traffic[0].DestinationIP &&
+				t.Protocol == traffic[0].Protocol &&
+				t.SrcPort == traffic[0].SrcPort &&
+				t.DstPort == traffic[0].DstPort &&
+				t.Bytes == traffic[0].Bytes &&
+				t.Packets == traffic[0].Packets &&
+				t.LastUpdate == traffic[0].LastUpdate {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
+}
+
 func (s *QueueStorage) GetNetworkTrafficBatch() ([]domain.NetworkTraffic, error) {
 	files, err := filepath.Glob(filepath.Join(s.baseDir, "network_traffic_*.json"))
 	if err != nil {

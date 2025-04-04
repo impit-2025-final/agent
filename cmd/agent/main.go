@@ -40,7 +40,7 @@ func main() {
 		log.Fatalf("error: %v", err)
 	}
 
-	networkCollector, err := ebpf.NewCollector(dockerCollector)
+	networkCollector, err := ebpf.NewCollector(dockerCollector, queueStorage)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
