@@ -94,8 +94,8 @@ int traffic_monitor(struct xdp_md *ctx)
     if (value) {
         __sync_fetch_and_add(&value->bytes, pkt_size);
         __sync_fetch_and_add(&value->packets, 1);
-        __sync_fetch_and_add(&value->src_port, src_port);
-        __sync_fetch_and_add(&value->dst_port, dst_port);
+        __sync_fetch_and_add((__u32 *)&value->src_port, (__u32)src_port);
+        __sync_fetch_and_add((__u32 *)&value->dst_port, (__u32)dst_port);
     } else {
         bpf_map_update_elem(&traffic_map, &key, &new_value, BPF_ANY);
     }
