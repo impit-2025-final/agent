@@ -3,7 +3,6 @@
 #include <linux/ip.h>
 #include <linux/tcp.h>
 #include <linux/udp.h>
-#include <linux/pid_namespace.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
 
