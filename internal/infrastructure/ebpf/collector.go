@@ -181,10 +181,10 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 		Packets    uint64
 		LastUpdate uint64
 		Processed  uint64
-		Init       uint64
 	}
 
 	for iter.Next(&key, &value) {
+
 		iface, err := net.InterfaceByIndex(int(key.Ifindex))
 		if err != nil {
 			if err := c.mapObj.Delete(&key); err != nil {

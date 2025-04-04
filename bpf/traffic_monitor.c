@@ -21,7 +21,6 @@ struct traffic_value {
     __u64 packets;
     __u64 last_update;
     __u64 processed; 
-    __u64 init;
 };
 
 struct {
@@ -94,21 +93,16 @@ int traffic_monitor(struct xdp_md *ctx)
         .packets = 1,
         .last_update = current_time,
         .processed = 0,
-        .init = 0,
     };
 
     struct traffic_value *value = bpf_map_lookup_elem(&traffic_map, &key);
     if (value) {
         __sync_fetch_and_add(&value->bytes, pkt_size);
         __sync_fetch_and_add(&value->packets, 1);
-        // value->src_port = src_port;
-        // value->dst_port = dst_port;
         value->last_update = current_time;
         value->processed = 0;
     } else {
         bpf_map_update_elem(&traffic_map, &key, &new_value, BPF_ANY);
-        value = bpf_map_lookup_elem(&traffic_map, &key);
-        value->init = 1;
     }
     
     return XDP_PASS;
