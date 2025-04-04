@@ -84,14 +84,13 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 
 	interfaces, err := net.Interfaces()
 	if err != nil {
-		return nil, fmt.Errorf("error getting interfaces: %w", err)
+		return nil, fmt.Errorf("error: %w", err)
 	}
 
 	for _, iface := range interfaces {
 		addrs, _ := iface.Addrs()
-		addrStrings := make([]string, 0, len(addrs))
-		for _, addr := range addrs {
-			addrStrings = append(addrStrings, addr.String())
+		if len(addrs) == 0 {
+			continue
 		}
 	}
 
