@@ -180,7 +180,7 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 		Bytes      uint64
 		Packets    uint64
 		LastUpdate uint64
-		Processed  uint8
+		Processed  uint64
 	}
 
 	for iter.Next(&key, &value) {

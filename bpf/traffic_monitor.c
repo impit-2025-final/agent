@@ -7,8 +7,6 @@
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
 
-#define PAYLOAD_HASH_LEN 16
-
 struct traffic_key {
     __u32 src_ip;
     __u32 dst_ip;
@@ -22,7 +20,7 @@ struct traffic_value {
     __u64 bytes;
     __u64 packets;
     __u64 last_update;
-    __u8 processed; 
+    __u64 processed; 
 };
 
 struct {
