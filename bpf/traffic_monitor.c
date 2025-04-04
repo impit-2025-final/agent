@@ -16,13 +16,13 @@ struct traffic_key {
     __u32 ifindex;
     __u32 src_port;
     __u32 dst_port;
-    __u64 payload_hash; 
 } __attribute__((packed));
 
 struct traffic_value {
     __u64 bytes;
     __u64 packets;
     __u64 last_update;
+    __u8 processed; 
 };
 
 struct {
@@ -55,7 +55,7 @@ int traffic_monitor(struct xdp_md *ctx)
 
     __u32 src_port = 0;
     __u32 dst_port = 0;
-        int ip_hdr_len = ip->ihl * 4;
+    int ip_hdr_len = ip->ihl * 4;
     if (ip_hdr_len < sizeof(struct iphdr)) {
         return XDP_PASS;
     }
@@ -63,6 +63,7 @@ int traffic_monitor(struct xdp_md *ctx)
     if ((void *)ip + ip_hdr_len > data_end) {
         return XDP_PASS;
     }
+
     void *transport_header = (struct tcphdr *)((unsigned char *)ip + ip_hdr_len);
     if (ip->protocol == IPPROTO_TCP) {
         struct tcphdr *tcp = transport_header;
@@ -73,16 +74,6 @@ int traffic_monitor(struct xdp_md *ctx)
         dst_port = bpf_ntohs(tcp->dest);
     }
 
-    __u64 payload_hash = 0;
-    unsigned char *payload = (unsigned char *)transport_header + ((ip->protocol == IPPROTO_TCP) ? sizeof(struct tcphdr) :
-                                                                  (ip->protocol == IPPROTO_UDP) ? sizeof(struct udphdr) : 0);
-    if ((void *)payload + PAYLOAD_HASH_LEN <= data_end) {
-        #pragma unroll
-        for (int i = 0; i < PAYLOAD_HASH_LEN; i++) {
-            payload_hash = payload_hash * 31 + payload[i];
-        }
-    }
-    
     __u16 pkt_size = data_end - data;
     
     if (ctx->ingress_ifindex == 0) {
@@ -96,7 +87,6 @@ int traffic_monitor(struct xdp_md *ctx)
         .ifindex = ctx->ingress_ifindex,
         .src_port = src_port,
         .dst_port = dst_port,
-        .payload_hash = payload_hash,
     };
     
     __u64 current_time = bpf_ktime_get_ns();
@@ -104,6 +94,7 @@ int traffic_monitor(struct xdp_md *ctx)
         .bytes = pkt_size,
         .packets = 1,
         .last_update = current_time,
+        .processed = 0,
     };
 
     struct traffic_value *value = bpf_map_lookup_elem(&traffic_map, &key);
@@ -113,6 +104,7 @@ int traffic_monitor(struct xdp_md *ctx)
         // value->src_port = src_port;
         // value->dst_port = dst_port;
         value->last_update = current_time;
+        value->processed = 0;
     } else {
         bpf_map_update_elem(&traffic_map, &key, &new_value, BPF_ANY);
     }

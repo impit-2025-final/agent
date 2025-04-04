@@ -181,6 +181,7 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 		Bytes      uint64
 		Packets    uint64
 		LastUpdate uint64
+		Processed  uint8
 	}
 
 	for iter.Next(&key, &value) {
@@ -189,6 +190,10 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 			if err := c.mapObj.Delete(&key); err != nil {
 				fmt.Printf("delete %v: %v\n", key, err)
 			}
+			continue
+		}
+
+		if value.Processed == 1 {
 			continue
 		}
 
@@ -208,14 +213,14 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 			continue
 		}
 
-		exist, err := c.queueStorage.CheckNetworkTrafficeDuplicate(traffic)
-		if err != nil {
-			return nil, fmt.Errorf("error: %w", err)
-		}
+		// exist, err := c.queueStorage.CheckNetworkTrafficeDuplicate(traffic)
+		// if err != nil {
+		// 	return nil, fmt.Errorf("error: %w", err)
+		// }
 
-		if exist {
-			continue
-		}
+		// if exist {
+		// 	continue
+		// }
 
 		traffic = append(traffic, domain.NetworkTraffic{
 			SourceIP:      srcIP,
@@ -232,6 +237,11 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 			RealTime:      time.Now().Unix(),
 			PayloadHash:   int64(key.PayloadHash),
 		})
+
+		value.Processed = 1
+		if err := c.mapObj.Update(&key, &value, ebpf.UpdateAny); err != nil {
+			fmt.Printf("error: %v\n", err)
+		}
 	}
 
 	return traffic, nil
