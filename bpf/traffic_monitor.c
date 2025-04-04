@@ -12,13 +12,13 @@ struct traffic_key {
     __u32 dst_ip;
     __u8 protocol;
     __u32 ifindex;
+    __u32 src_port;
+    __u32 dst_port;
 } __attribute__((packed));
 
 struct traffic_value {
     __u64 bytes;
     __u64 packets;
-    __u32 src_port;
-    __u32 dst_port;
     __u64 last_update;
 };
 
@@ -81,14 +81,14 @@ int traffic_monitor(struct xdp_md *ctx)
         .dst_ip = ip->daddr,
         .protocol = ip->protocol,
         .ifindex = ctx->ingress_ifindex,
+        .src_port = src_port,
+        .dst_port = dst_port,
     };
     
     __u64 current_time = bpf_ktime_get_ns();
     struct traffic_value new_value = {
         .bytes = pkt_size,
         .packets = 1,
-        .src_port = src_port,
-        .dst_port = dst_port,
         .last_update = current_time,
     };
 

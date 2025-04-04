@@ -117,7 +117,9 @@ func (s *QueueStorage) CheckNetworkTrafficeDuplicate(traffic []domain.NetworkTra
 				t.DstPort == traffic[0].DstPort &&
 				t.Bytes == traffic[0].Bytes &&
 				t.Packets == traffic[0].Packets &&
-				t.LastUpdate == traffic[0].LastUpdate {
+				t.LastUpdate == traffic[0].LastUpdate &&
+				t.ContainerID == traffic[0].ContainerID &&
+				t.ContainerName == traffic[0].ContainerName {
 				return true, nil
 			}
 		}

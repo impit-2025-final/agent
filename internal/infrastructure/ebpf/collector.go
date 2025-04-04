@@ -172,13 +172,13 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 		DstIP    uint32
 		Protocol uint8
 		Ifindex  uint32
+		SrcPort  uint32
+		DstPort  uint32
 	}
 
 	var value struct {
 		Bytes      uint64
 		Packets    uint64
-		SrcPort    uint32
-		DstPort    uint32
 		LastUpdate uint64
 	}
 
@@ -225,8 +225,8 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 			ContainerID:   containerID,
 			ContainerName: containerName,
 			Interface:     iface.Name,
-			SrcPort:       uint16(value.SrcPort),
-			DstPort:       uint16(value.DstPort),
+			SrcPort:       uint16(key.SrcPort),
+			DstPort:       uint16(key.DstPort),
 			LastUpdate:    int64(value.LastUpdate),
 			RealTime:      time.Now().Unix(),
 		})
