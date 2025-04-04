@@ -115,13 +115,9 @@ func main() {
 			case <-ctx.Done():
 				return
 			case dockerInfo := <-dockerChan:
-				if err := queueStorage.AddDockerInfo(dockerInfo); err != nil {
-					log.Printf("error: %v", err)
-				}
+				queueStorage.AddDockerInfo(dockerInfo)
 			case networkTraffic := <-networkChan:
-				if err := queueStorage.AddNetworkTraffic(networkTraffic); err != nil {
-					log.Printf("error: %v", err)
-				}
+				queueStorage.AddNetworkTraffic(networkTraffic)
 			}
 		}
 	}()

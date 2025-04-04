@@ -181,6 +181,7 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 		Packets    uint64
 		LastUpdate uint64
 		Processed  uint64
+		Init       uint64
 	}
 
 	for iter.Next(&key, &value) {
@@ -211,15 +212,6 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 		if containerID == "" && containerName == "" {
 			continue
 		}
-
-		// exist, err := c.queueStorage.CheckNetworkTrafficeDuplicate(traffic)
-		// if err != nil {
-		// 	return nil, fmt.Errorf("error: %w", err)
-		// }
-
-		// if exist {
-		// 	continue
-		// }
 
 		traffic = append(traffic, domain.NetworkTraffic{
 			SourceIP:      srcIP,
