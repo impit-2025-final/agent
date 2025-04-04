@@ -3,13 +3,17 @@
 #include <linux/ip.h>
 #include <linux/tcp.h>
 #include <linux/udp.h>
+#include <linux/pid_namespace.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
 
 struct traffic_key {
     __u32 src_ip;
     __u32 dst_ip;
+    __u32 src_port;
+    __u32 dst_port;
     __u8 protocol;
+    __u32 ifindex;
 } __attribute__((packed));
 
 struct traffic_value {
@@ -30,23 +34,30 @@ int traffic_monitor(struct xdp_md *ctx)
     void *data_end = (void *)(long)ctx->data_end;
     void *data = (void *)(long)ctx->data;
     
-    if (data + sizeof(struct ethhdr) > data_end)
-        return XDP_PASS;
+    if (data + sizeof(struct ethhdr) > data_end) {
+        return XDP_PASS; 
+    }
 
     struct ethhdr *eth = data;
-    if (eth->h_proto != bpf_htons(ETH_P_IP))
+    
+    if (eth->h_proto != bpf_htons(ETH_P_IP)) {
         return XDP_PASS;
+    }
         
     struct iphdr *ip = data + sizeof(struct ethhdr);
-    if ((void*)(ip + 1) > data_end)
+    if ((void*)(ip + 1) > data_end) {
         return XDP_PASS;
+    }
     
     __u16 pkt_size = data_end - data;
     
     struct traffic_key key = {
         .src_ip = ip->saddr,
         .dst_ip = ip->daddr,
-        .protocol = ip->protocol
+        .protocol = ip->protocol,
+        .src_port = ip->saddr,
+        .dst_port = ip->daddr,
+        .ifindex = ctx->ingress_ifindex,
     };
     
     struct traffic_value new_value = {

@@ -35,12 +35,12 @@ func main() {
 		log.Fatalf("error: %v", err)
 	}
 
-	dockerCollector, err := docker.NewCollector(cfg.Docker.Network)
+	dockerCollector, err := docker.NewCollector()
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	networkCollector, err := ebpf.NewCollector()
+	networkCollector, err := ebpf.NewCollector(dockerCollector)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}

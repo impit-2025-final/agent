@@ -6,15 +6,16 @@ import (
 
 type DockerInfo struct {
 	Containers []ContainerInfo
-	Network    NetworkInfo
+	Networks   []NetworkInfo
 }
 
 type ContainerInfo struct {
-	ID     string
-	Name   string
-	IP     string
-	Status string
-	Labels map[string]string
+	ID            string
+	Name          string
+	IP            string
+	Status        string
+	Labels        map[string]string
+	AdditionalIPs []string
 }
 
 type NetworkInfo struct {
@@ -28,9 +29,11 @@ type NetworkTraffic struct {
 	SourceIP      string
 	DestinationIP string
 	Protocol      string
+	Interface     string
 	Bytes         int64
 	Packets       int64
-	Timestamp     int64
+	ContainerID   string
+	ContainerName string
 }
 
 type DockerCollector interface {

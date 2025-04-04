@@ -14,11 +14,10 @@ import (
 )
 
 type Collector struct {
-	client  *client.Client
-	network string
+	client *client.Client
 }
 
-func NewCollector(network string) (*Collector, error) {
+func NewCollector() (*Collector, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, fmt.Errorf("error: %w", err)
@@ -32,8 +31,7 @@ func NewCollector(network string) (*Collector, error) {
 	}
 
 	return &Collector{
-		client:  cli,
-		network: network,
+		client: cli,
 	}, nil
 }
 
@@ -45,9 +43,9 @@ func (c *Collector) Collect(ctx context.Context) (*domain.DockerInfo, error) {
 		return nil, errors.Wrap(err, "error")
 	}
 
-	network, err := c.client.NetworkInspect(ctx, c.network, network.InspectOptions{})
+	networks, err := c.client.NetworkList(ctx, network.ListOptions{})
 	if err != nil {
-		return nil, errors.Wrapf(err, "error %s", c.network)
+		return nil, errors.Wrap(err, "error fetching networks")
 	}
 
 	containerInfos := make([]domain.ContainerInfo, 0, len(containers))
@@ -65,25 +63,27 @@ func (c *Collector) Collect(ctx context.Context) (*domain.DockerInfo, error) {
 			continue
 		}
 
-		if containerDetails.NetworkSettings != nil {
-			if networkSettings, ok := containerDetails.NetworkSettings.Networks[c.network]; ok {
-				info.IP = networkSettings.IPAddress
-			}
+		for _, network := range containerDetails.NetworkSettings.Networks {
+			info.IP = network.IPAddress
 		}
 
 		containerInfos = append(containerInfos, info)
 	}
 
-	networkInfo := domain.NetworkInfo{
-		Name:       network.Name,
-		Subnet:     network.IPAM.Config[0].Subnet,
-		Gateway:    network.IPAM.Config[0].Gateway,
-		Containers: getContainerIDs(network.Containers),
+	networkInfos := make([]domain.NetworkInfo, 0, len(networks))
+	for _, network := range networks {
+		networkInfo := domain.NetworkInfo{
+			Name:       network.Name,
+			Subnet:     network.IPAM.Config[0].Subnet,
+			Gateway:    network.IPAM.Config[0].Gateway,
+			Containers: getContainerIDs(network.Containers),
+		}
+		networkInfos = append(networkInfos, networkInfo)
 	}
 
 	return &domain.DockerInfo{
 		Containers: containerInfos,
-		Network:    networkInfo,
+		Networks:   networkInfos,
 	}, nil
 }
 

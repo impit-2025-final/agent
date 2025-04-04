@@ -3,7 +3,7 @@ module agent
 go 1.24.2
 
 require (
-	github.com/cilium/ebpf v0.12.3
+	github.com/cilium/ebpf v0.18.0
 	github.com/docker/docker v28.0.4+incompatible
 	github.com/pkg/errors v0.9.1
 	gopkg.in/yaml.v3 v3.0.1
