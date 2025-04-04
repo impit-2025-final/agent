@@ -19,6 +19,7 @@ struct traffic_value {
     __u64 packets;
     __u32 src_port;
     __u32 dst_port;
+    __u64 last_update;
 };
 
 struct {
@@ -82,19 +83,27 @@ int traffic_monitor(struct xdp_md *ctx)
         .ifindex = ctx->ingress_ifindex,
     };
     
+    __u64 current_time = bpf_ktime_get_ns();
     struct traffic_value new_value = {
         .bytes = pkt_size,
         .packets = 1,
         .src_port = src_port,
         .dst_port = dst_port,
+        .last_update = current_time,
     };
 
     struct traffic_value *value = bpf_map_lookup_elem(&traffic_map, &key);
     if (value) {
+        __u64 max_age = 5ULL * 1000000000;
+        if (current_time - value->last_update > max_age) {
+            bpf_map_delete_elem(&traffic_map, &key);
+            return XDP_PASS;
+        }
         __sync_fetch_and_add(&value->bytes, pkt_size);
         __sync_fetch_and_add(&value->packets, 1);
         value->src_port = src_port;
         value->dst_port = dst_port;
+        value->last_update = current_time;
     } else {
         bpf_map_update_elem(&traffic_map, &key, &new_value, BPF_ANY);
     }
