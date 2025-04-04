@@ -34,6 +34,8 @@ type NetworkTraffic struct {
 	Packets       int64
 	ContainerID   string
 	ContainerName string
+	SrcPort       uint16
+	DstPort       uint16
 }
 
 type DockerCollector interface {

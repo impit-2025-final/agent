@@ -3,14 +3,15 @@
 #include <linux/ip.h>
 #include <linux/tcp.h>
 #include <linux/udp.h>
+#include <linux/in.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
 
 struct traffic_key {
     __u32 src_ip;
     __u32 dst_ip;
-    __u32 src_port;
-    __u32 dst_port;
+    __u16 src_port;
+    __u16 dst_port;
     __u8 protocol;
     __u32 ifindex;
 } __attribute__((packed));
@@ -43,19 +44,43 @@ int traffic_monitor(struct xdp_md *ctx)
         return XDP_PASS;
     }
         
-    struct iphdr *ip = data + sizeof(struct ethhdr);
+    struct iphdr *ip = (struct iphdr *)(eth + 1);
     if ((void*)(ip + 1) > data_end) {
         return XDP_PASS;
     }
+
+    __u16 src_port = 0;
+    __u16 dst_port = 0;
+        int ip_hdr_len = ip->ihl * 4;
+    if (ip_hdr_len < sizeof(struct iphdr)) {
+        return XDP_PASS;
+    }
+
+    if ((void *)ip + ip_hdr_len > data_end) {
+        return XDP_PASS;
+    }
+    void *transport_header = (struct tcphdr *)((unsigned char *)ip + ip_hdr_len);
+    if (ip->protocol == IPPROTO_TCP) {
+        struct tcphdr *tcp = transport_header;
+        if (tcp + 1 > (struct tcphdr *)data_end)
+            return XDP_PASS;
+            
+        src_port = bpf_ntohs(tcp->source);
+        dst_port = bpf_ntohs(tcp->dest);
+    }
     
     __u16 pkt_size = data_end - data;
+    
+    if (ctx->ingress_ifindex == 0) {
+        return XDP_PASS;
+    }
     
     struct traffic_key key = {
         .src_ip = ip->saddr,
         .dst_ip = ip->daddr,
         .protocol = ip->protocol,
-        .src_port = ip->saddr,
-        .dst_port = ip->daddr,
+        .src_port = src_port,
+        .dst_port = dst_port,
         .ifindex = ctx->ingress_ifindex,
     };
     

@@ -56,7 +56,7 @@ func NewCollector(dockerCollector *docker.Collector) (*Collector, error) {
 }
 
 func (c *Collector) updateContainerCache(ctx context.Context) error {
-	if time.Since(c.lastUpdate) < 5*time.Second {
+	if time.Since(c.lastUpdate) < 100*time.Millisecond {
 		return nil
 	}
 
@@ -102,6 +102,10 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 			continue
 		}
 
+		if _, err := net.InterfaceByIndex(iface.Index); err != nil {
+			continue
+		}
+
 		var l link.Link
 		var attachErr error
 
@@ -133,7 +137,7 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 		}
 
 		if !attached {
-			return nil, fmt.Errorf("error: %w", attachErr)
+			continue
 		}
 	}
 
@@ -143,10 +147,12 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 	var traffic []domain.NetworkTraffic
 	iter := c.mapObj.Iterate()
 	var key struct {
-		SrcIP   uint32
-		DstIP   uint32
-		Proto   uint8
-		IfIndex uint32
+		SrcIP    uint32
+		DstIP    uint32
+		SrcPort  uint16
+		DstPort  uint16
+		Protocol uint8
+		Ifindex  uint32
 	}
 
 	var value struct {
@@ -154,13 +160,13 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 		Packets uint64
 	}
 
-	var entriesCount int
-
 	for iter.Next(&key, &value) {
-		entriesCount++
-		iface, err := net.InterfaceByIndex(int(key.IfIndex))
+		iface, err := net.InterfaceByIndex(int(key.Ifindex))
 		if err != nil {
-			return nil, fmt.Errorf("error: %w", err)
+			if err := c.mapObj.Delete(&key); err != nil {
+				fmt.Printf("delete %v: %v\n", key, err)
+			}
+			continue
 		}
 
 		srcIP := net.IPv4(byte(key.SrcIP), byte(key.SrcIP>>8), byte(key.SrcIP>>16), byte(key.SrcIP>>24)).String()
@@ -182,12 +188,14 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 		traffic = append(traffic, domain.NetworkTraffic{
 			SourceIP:      srcIP,
 			DestinationIP: dstIP,
-			Protocol:      getProtocolName(key.Proto),
+			Protocol:      getProtocolName(key.Protocol),
 			Bytes:         int64(value.Bytes),
 			Packets:       int64(value.Packets),
 			ContainerID:   containerID,
 			ContainerName: containerName,
 			Interface:     iface.Name,
+			SrcPort:       key.SrcPort,
+			DstPort:       key.DstPort,
 		})
 	}
 
