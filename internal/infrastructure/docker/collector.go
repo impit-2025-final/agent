@@ -72,6 +72,9 @@ func (c *Collector) Collect(ctx context.Context) (*domain.DockerInfo, error) {
 
 	networkInfos := make([]domain.NetworkInfo, 0, len(networks))
 	for _, network := range networks {
+		if len(network.IPAM.Config) == 0 {
+			continue
+		}
 		networkInfo := domain.NetworkInfo{
 			Name:       network.Name,
 			Subnet:     network.IPAM.Config[0].Subnet,
