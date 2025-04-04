@@ -5,37 +5,37 @@ import (
 )
 
 type DockerInfo struct {
-	Containers []ContainerInfo
-	Networks   []NetworkInfo
+	Containers []ContainerInfo `json:"containers"`
+	Networks   []NetworkInfo   `json:"networks"`
 }
 
 type ContainerInfo struct {
-	ID            string
-	Name          string
-	IP            string
-	Status        string
-	Labels        map[string]string
-	AdditionalIPs []string
+	ID            string            `json:"id"`
+	Name          string            `json:"name"`
+	IP            string            `json:"ip"`
+	Status        string            `json:"status"`
+	Labels        map[string]string `json:"labels"`
+	AdditionalIPs []string          `json:"additional_ips"`
 }
 
 type NetworkInfo struct {
-	Name       string
-	Subnet     string
-	Gateway    string
-	Containers []string
+	Name       string   `json:"name"`
+	Subnet     string   `json:"subnet"`
+	Gateway    string   `json:"gateway"`
+	Containers []string `json:"containers"`
 }
 
 type NetworkTraffic struct {
-	SourceIP      string
-	DestinationIP string
-	Protocol      string
-	Interface     string
-	Bytes         int64
-	Packets       int64
-	ContainerID   string
-	ContainerName string
-	SrcPort       uint16
-	DstPort       uint16
+	SourceIP      string `json:"source_ip"`
+	DestinationIP string `json:"destination_ip"`
+	Protocol      string `json:"protocol"`
+	Interface     string `json:"interface"`
+	Bytes         int64  `json:"bytes"`
+	Packets       int64  `json:"packets"`
+	ContainerID   string `json:"container_id"`
+	ContainerName string `json:"container_name"`
+	SrcPort       uint16 `json:"src_port"`
+	DstPort       uint16 `json:"dst_port"`
 }
 
 type DockerCollector interface {

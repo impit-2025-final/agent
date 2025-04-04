@@ -25,6 +25,14 @@ func NewQueueStorage(baseDir string) (*QueueStorage, error) {
 }
 
 func (s *QueueStorage) AddDockerInfo(info *domain.DockerInfo) error {
+	if info == nil {
+		return nil
+	}
+
+	if len(info.Containers) == 0 {
+		return nil
+	}
+
 	data, err := json.Marshal(info)
 	if err != nil {
 		return fmt.Errorf("error: %w", err)
@@ -38,6 +46,10 @@ func (s *QueueStorage) AddDockerInfo(info *domain.DockerInfo) error {
 }
 
 func (s *QueueStorage) AddNetworkTraffic(traffic []domain.NetworkTraffic) error {
+	if len(traffic) == 0 {
+		return nil
+	}
+
 	data, err := json.Marshal(traffic)
 	if err != nil {
 		return fmt.Errorf("error: %w", err)
