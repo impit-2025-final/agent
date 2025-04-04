@@ -10,7 +10,6 @@
 struct traffic_key {
     __u32 src_ip;
     __u32 dst_ip;
-
     __u8 protocol;
     __u32 ifindex;
 } __attribute__((packed));
@@ -18,8 +17,8 @@ struct traffic_key {
 struct traffic_value {
     __u64 bytes;
     __u64 packets;
-    __u16 src_port;
-    __u16 dst_port;
+    __u32 src_port;
+    __u32 dst_port;
 };
 
 struct {
@@ -50,8 +49,8 @@ int traffic_monitor(struct xdp_md *ctx)
         return XDP_PASS;
     }
 
-    __u16 src_port = 0;
-    __u16 dst_port = 0;
+    __u32 src_port = 0;
+    __u32 dst_port = 0;
         int ip_hdr_len = ip->ihl * 4;
     if (ip_hdr_len < sizeof(struct iphdr)) {
         return XDP_PASS;

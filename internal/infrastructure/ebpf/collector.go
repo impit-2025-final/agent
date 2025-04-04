@@ -156,8 +156,8 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 	var value struct {
 		Bytes   uint64
 		Packets uint64
-		SrcPort uint16
-		DstPort uint16
+		SrcPort uint32
+		DstPort uint32
 	}
 
 	for iter.Next(&key, &value) {
@@ -194,8 +194,8 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 			ContainerID:   containerID,
 			ContainerName: containerName,
 			Interface:     iface.Name,
-			SrcPort:       value.SrcPort,
-			DstPort:       value.DstPort,
+			SrcPort:       uint16(value.SrcPort),
+			DstPort:       uint16(value.DstPort),
 		})
 	}
 
