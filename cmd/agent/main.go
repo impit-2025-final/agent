@@ -84,7 +84,7 @@ func main() {
 						continue
 					}
 
-					fmt.Println(dockerInfo)
+					// fmt.Println(dockerInfo)
 
 					select {
 					case dockerChan <- dockerInfo:
@@ -98,7 +98,7 @@ func main() {
 						collectCancel()
 						continue
 					}
-					fmt.Println(networkTraffic)
+					// fmt.Println(networkTraffic)
 
 					select {
 					case networkChan <- networkTraffic:
@@ -161,6 +161,7 @@ func main() {
 
 					for _, t := range networkBatch {
 						if t.Processed == 1 {
+							fmt.Println(t.SourceIP + t.DestinationIP + t.Protocol + t.Interface + strconv.Itoa(int(t.SrcPort)) + strconv.Itoa(int(t.DstPort)))
 							queueStorage.DeleteNetworkTraffic(t.SourceIP + t.DestinationIP + t.Protocol + t.Interface + strconv.Itoa(int(t.SrcPort)) + strconv.Itoa(int(t.DstPort)))
 						}
 					}
