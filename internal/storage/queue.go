@@ -110,16 +110,7 @@ func (s *QueueStorage) CheckNetworkTrafficeDuplicate(traffic []domain.NetworkTra
 		}
 
 		for _, t := range traffic {
-			if t.SourceIP == traffic[0].SourceIP &&
-				t.DestinationIP == traffic[0].DestinationIP &&
-				t.Protocol == traffic[0].Protocol &&
-				t.SrcPort == traffic[0].SrcPort &&
-				t.DstPort == traffic[0].DstPort &&
-				t.Bytes == traffic[0].Bytes &&
-				t.Packets == traffic[0].Packets &&
-				t.LastUpdate == traffic[0].LastUpdate &&
-				t.ContainerID == traffic[0].ContainerID &&
-				t.ContainerName == traffic[0].ContainerName {
+			if t.PayloadHash == traffic[0].PayloadHash {
 				return true, nil
 			}
 		}

@@ -7,6 +7,8 @@
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
 
+#define PAYLOAD_HASH_LEN 16
+
 struct traffic_key {
     __u32 src_ip;
     __u32 dst_ip;
@@ -14,6 +16,7 @@ struct traffic_key {
     __u32 ifindex;
     __u32 src_port;
     __u32 dst_port;
+    __u64 payload_hash; 
 } __attribute__((packed));
 
 struct traffic_value {
@@ -69,6 +72,16 @@ int traffic_monitor(struct xdp_md *ctx)
         src_port = bpf_ntohs(tcp->source);
         dst_port = bpf_ntohs(tcp->dest);
     }
+
+    __u64 payload_hash = 0;
+    unsigned char *payload = (unsigned char *)transport_header + ((ip->protocol == IPPROTO_TCP) ? sizeof(struct tcphdr) :
+                                                                  (ip->protocol == IPPROTO_UDP) ? sizeof(struct udphdr) : 0);
+    if ((void *)payload + PAYLOAD_HASH_LEN <= data_end) {
+        #pragma unroll
+        for (int i = 0; i < PAYLOAD_HASH_LEN; i++) {
+            payload_hash = payload_hash * 31 + payload[i];
+        }
+    }
     
     __u16 pkt_size = data_end - data;
     
@@ -83,6 +96,7 @@ int traffic_monitor(struct xdp_md *ctx)
         .ifindex = ctx->ingress_ifindex,
         .src_port = src_port,
         .dst_port = dst_port,
+        .payload_hash = payload_hash,
     };
     
     __u64 current_time = bpf_ktime_get_ns();
