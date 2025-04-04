@@ -166,11 +166,11 @@ func main() {
 					log.Printf("error: %v", err)
 				}
 
-				ipsString := []string{}
+				ipsString := make([]string, 0)
 				for _, ip := range ips {
 					addr, err := netip.ParseAddr(ip.String())
 					if err != nil {
-						log.Printf("error: %v", err)
+						continue
 					}
 					if addr.IsGlobalUnicast() {
 						ipsString = append(ipsString, ip.String())

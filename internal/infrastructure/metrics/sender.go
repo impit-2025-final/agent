@@ -45,8 +45,13 @@ func (s *Sender) SendDockerInfo(ctx context.Context, info *domain.DockerInfo) er
 	}
 	defer resp.Body.Close()
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("error: %w", err)
+	}
+
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("error: %d", resp.StatusCode)
+		return fmt.Errorf("error %d %s", resp.StatusCode, string(body))
 	}
 
 	return nil
@@ -69,8 +74,13 @@ func (s *Sender) SendNetworkTraffic(ctx context.Context, traffic []domain.Networ
 	}
 	defer resp.Body.Close()
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("error: %w", err)
+	}
+
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("error %d", resp.StatusCode)
+		return fmt.Errorf("error %d %s", resp.StatusCode, string(body))
 	}
 
 	return nil
@@ -93,8 +103,13 @@ func (s *Sender) SendNodeInfo(ctx context.Context, info *domain.NodeInfo) error 
 	}
 	defer resp.Body.Close()
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("error: %w", err)
+	}
+
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("error %d", resp.StatusCode)
+		return fmt.Errorf("error %d %s", resp.StatusCode, string(body))
 	}
 
 	return nil
