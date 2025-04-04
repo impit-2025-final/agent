@@ -87,13 +87,6 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 		return nil, fmt.Errorf("error: %w", err)
 	}
 
-	for _, iface := range interfaces {
-		addrs, _ := iface.Addrs()
-		if len(addrs) == 0 {
-			continue
-		}
-	}
-
 	for _, l := range c.links {
 		l.Close()
 	}
