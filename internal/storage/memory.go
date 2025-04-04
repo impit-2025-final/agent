@@ -35,6 +35,7 @@ func (s *MemoryStorage) AddNetworkTraffic(traffic []domain.NetworkTraffic) {
 			existing.Packets += t.Packets
 			existing.LastUpdate = t.LastUpdate
 			existing.RealTime = t.RealTime
+			existing.Processed = t.Processed
 			s.networkTraffic[key] = existing
 		} else {
 			s.networkTraffic[key] = t
@@ -57,6 +58,12 @@ func (s *MemoryStorage) GetNetworkTraffic() []domain.NetworkTraffic {
 		traffic = append(traffic, t)
 	}
 	return traffic
+}
+
+func (s *MemoryStorage) DeleteNetworkTraffic(key string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.networkTraffic, key)
 }
 
 func (s *MemoryStorage) Clear() {

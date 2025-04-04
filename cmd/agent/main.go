@@ -14,6 +14,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"syscall"
 	"time"
 )
@@ -157,6 +158,13 @@ func main() {
 					if err := metricsSender.SendNetworkTraffic(sendCtx, networkBatch); err != nil {
 						log.Printf("error: %v", err)
 					}
+
+					for _, t := range networkBatch {
+						if t.Processed == 1 {
+							queueStorage.DeleteNetworkTraffic(t.SourceIP + t.DestinationIP + t.Protocol + t.Interface + strconv.Itoa(int(t.SrcPort)) + strconv.Itoa(int(t.DstPort)))
+						}
+					}
+
 				}
 
 				sendCancel()

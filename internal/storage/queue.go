@@ -24,6 +24,10 @@ func NewQueueStorage(baseDir string) (*QueueStorage, error) {
 	}, nil
 }
 
+func (s *QueueStorage) DeleteNetworkTraffic(key string) {
+	s.memory.DeleteNetworkTraffic(key)
+}
+
 func (s *QueueStorage) AddDockerInfo(info *domain.DockerInfo) {
 	if info == nil {
 		return
