@@ -168,13 +168,12 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 	var traffic []domain.NetworkTraffic
 	iter := c.mapObj.Iterate()
 	var key struct {
-		SrcIP       uint32
-		DstIP       uint32
-		Protocol    uint8
-		Ifindex     uint32
-		SrcPort     uint32
-		DstPort     uint32
-		PayloadHash uint64
+		SrcIP    uint32
+		DstIP    uint32
+		Protocol uint8
+		Ifindex  uint32
+		SrcPort  uint32
+		DstPort  uint32
 	}
 
 	var value struct {
@@ -235,7 +234,6 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 			DstPort:       uint16(key.DstPort),
 			LastUpdate:    int64(value.LastUpdate),
 			RealTime:      time.Now().Unix(),
-			PayloadHash:   int64(key.PayloadHash),
 		})
 
 		value.Processed = 1

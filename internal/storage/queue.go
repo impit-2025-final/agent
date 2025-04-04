@@ -109,11 +109,11 @@ func (s *QueueStorage) CheckNetworkTrafficeDuplicate(traffic []domain.NetworkTra
 			continue
 		}
 
-		for _, t := range traffic {
-			if t.PayloadHash == traffic[0].PayloadHash {
-				return true, nil
-			}
-		}
+		// for _, t := range traffic {
+		// 	if t.PayloadHash == traffic[0].PayloadHash {
+		// 		return true, nil
+		// 	}
+		// }
 	}
 	return false, nil
 }
