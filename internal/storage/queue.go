@@ -4,8 +4,6 @@ import (
 	"agent/internal/domain"
 	"fmt"
 	"os"
-	"path/filepath"
-	"time"
 )
 
 type QueueStorage struct {
@@ -60,25 +58,7 @@ func (s *QueueStorage) GetNetworkTrafficBatch() ([]domain.NetworkTraffic, error)
 	return s.memory.GetNetworkTraffic(), nil
 }
 
-func (s *QueueStorage) Cleanup(maxAge time.Duration) error {
-	files, err := filepath.Glob(filepath.Join(s.baseDir, "*.json"))
-	if err != nil {
-		return fmt.Errorf("error: %w", err)
-	}
-
-	now := time.Now()
-	for _, file := range files {
-		info, err := os.Stat(file)
-		if err != nil {
-			continue
-		}
-
-		if now.Sub(info.ModTime()) > maxAge {
-			if err := os.Remove(file); err != nil {
-				return fmt.Errorf("error %s: %w", file, err)
-			}
-		}
-	}
-
+func (s *QueueStorage) Cleanup() error {
+	s.memory.Clear()
 	return nil
 }

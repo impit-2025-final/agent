@@ -8,13 +8,11 @@ import (
 	"agent/internal/infrastructure/metrics"
 	"agent/internal/storage"
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"runtime"
-	"strconv"
 	"syscall"
 	"time"
 )
@@ -159,18 +157,11 @@ func main() {
 						log.Printf("error: %v", err)
 					}
 
-					for _, t := range networkBatch {
-						if t.Processed == 1 {
-							fmt.Println(t.SourceIP + t.DestinationIP + t.Protocol + t.Interface + strconv.Itoa(int(t.SrcPort)) + strconv.Itoa(int(t.DstPort)))
-							queueStorage.DeleteNetworkTraffic(t.SourceIP + t.DestinationIP + t.Protocol + t.Interface + strconv.Itoa(int(t.SrcPort)) + strconv.Itoa(int(t.DstPort)))
-						}
-					}
-
 				}
 
 				sendCancel()
 
-				if err := queueStorage.Cleanup(2 * time.Hour); err != nil {
+				if err := queueStorage.Cleanup(); err != nil {
 					log.Printf("error: %v", err)
 				}
 
