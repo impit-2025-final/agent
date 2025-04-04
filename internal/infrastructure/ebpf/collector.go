@@ -1,5 +1,16 @@
 package ebpf
 
+/*
+#include <time.h>
+static unsigned long long get_nsecs(void)
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (unsigned long long)ts.tv_sec * 1000000000UL + ts.tv_nsec;
+}
+*/
+import "C"
+
 import (
 	"agent/internal/domain"
 	"agent/internal/infrastructure/docker"
@@ -245,12 +256,21 @@ func (c *Collector) cleanupOldEntries() error {
 		LastUpdate uint64
 	}
 
+	monotonic := uint64(C.get_nsecs())
+
+	currentTime := monotonic
+	maxAge := uint64(5 * time.Second.Nanoseconds())
+
 	iter := c.mapObj.Iterate()
 	for iter.Next(&key, &value) {
-		currentTime := uint64(time.Now().UnixNano())
-		maxAge := uint64(5 * time.Second)
+		timeDiff := uint64(0)
+		if value.LastUpdate <= currentTime {
+			timeDiff = currentTime - value.LastUpdate
+		} else {
+			timeDiff = 0
+		}
 
-		if currentTime-value.LastUpdate > maxAge {
+		if timeDiff > maxAge {
 			if err := c.mapObj.Delete(&key); err != nil {
 				return fmt.Errorf("error: %w", err)
 			}
