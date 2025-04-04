@@ -9,6 +9,8 @@ import (
 	"agent/internal/storage"
 	"context"
 	"log"
+	"net"
+	"net/netip"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -158,6 +160,27 @@ func main() {
 					}
 
 				}
+
+				ips, err := net.InterfaceAddrs()
+				if err != nil {
+					log.Printf("error: %v", err)
+				}
+
+				ipsString := []string{}
+				for _, ip := range ips {
+					addr, err := netip.ParseAddr(ip.String())
+					if err != nil {
+						log.Printf("error: %v", err)
+					}
+					if addr.IsGlobalUnicast() {
+						ipsString = append(ipsString, ip.String())
+					}
+				}
+
+				metricsSender.SendNodeInfo(sendCtx, &domain.NodeInfo{
+					Hostname: &cfg.Node.Name,
+					Ips:      ipsString,
+				})
 
 				sendCancel()
 

@@ -76,6 +76,30 @@ func (s *Sender) SendNetworkTraffic(ctx context.Context, traffic []domain.Networ
 	return nil
 }
 
+func (s *Sender) SendNodeInfo(ctx context.Context, info *domain.NodeInfo) error {
+	data, err := json.Marshal(info)
+	if err != nil {
+		return fmt.Errorf("error: %w", err)
+	}
+
+	req, err := s.createRequest(ctx, "PUT", fmt.Sprintf("%s/node-info-update", s.serviceURL), data)
+	if err != nil {
+		return err
+	}
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("error: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("error %d", resp.StatusCode)
+	}
+
+	return nil
+}
+
 func (s *Sender) createRequest(ctx context.Context, method, url string, data []byte) (*http.Request, error) {
 	var body io.Reader
 	var buf bytes.Buffer

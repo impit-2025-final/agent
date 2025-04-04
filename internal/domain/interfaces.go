@@ -41,6 +41,11 @@ type NetworkTraffic struct {
 	Processed     int64  `json:"-"`
 }
 
+type NodeInfo struct {
+	Hostname *string  `json:"hostname"`
+	Ips      []string `json:"ips"`
+}
+
 type DockerCollector interface {
 	Collect(ctx context.Context) (*DockerInfo, error)
 }
