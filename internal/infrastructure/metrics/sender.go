@@ -15,14 +15,16 @@ import (
 type Sender struct {
 	client     *http.Client
 	serviceURL string
+	token      string
 }
 
-func NewSender(serviceURL string) *Sender {
+func NewSender(serviceURL string, token string) *Sender {
 	return &Sender{
 		client: &http.Client{
 			Timeout: 10 * time.Second,
 		},
 		serviceURL: serviceURL,
+		token:      token,
 	}
 }
 
@@ -84,7 +86,7 @@ func (s *Sender) createRequest(ctx context.Context, method, url string, data []b
 	if err := gw.Close(); err != nil {
 		return nil, fmt.Errorf("error: %w", err)
 	}
-	body = &buf
+
 	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return nil, fmt.Errorf("error: %w", err)
@@ -92,6 +94,6 @@ func (s *Sender) createRequest(ctx context.Context, method, url string, data []b
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Content-Encoding", "gzip")
-
+	req.Header.Set("Authorization", s.token)
 	return req, nil
 }

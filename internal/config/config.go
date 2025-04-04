@@ -11,6 +11,7 @@ import (
 type Config struct {
 	Service struct {
 		URL            string `yaml:"url"`
+		Token          string `yaml:"token"`
 		UpdateInterval int    `yaml:"update_interval"`
 	} `yaml:"service"`
 

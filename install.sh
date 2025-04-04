@@ -39,12 +39,16 @@ if [ "$UPDATE_MODE" = false ]; then
   read -p "Enter service URL [$DEFAULT_URL]: " SERVICE_URL
   SERVICE_URL=${SERVICE_URL:-$DEFAULT_URL}
 
+  DEFAULT_TOKEN="1234567890"
+  read -p "Enter service token [$DEFAULT_TOKEN]: " SERVICE_TOKEN
+  SERVICE_TOKEN=${SERVICE_TOKEN:-$DEFAULT_TOKEN}
+
   echo "Creating config.yaml file"
   cat > $INSTALL_DIR/config.yaml << EOF
 service:
   url: "$SERVICE_URL"
   update_interval: 60
-
+  token: "$SERVICE_TOKEN"
 docker:
   network: "bridge"
   ignore_containers:

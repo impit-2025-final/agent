@@ -44,7 +44,7 @@ func main() {
 		log.Fatalf("error: %v", err)
 	}
 
-	metricsSender := metrics.NewSender(cfg.Service.URL)
+	metricsSender := metrics.NewSender(cfg.Service.URL, cfg.Service.Token)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
