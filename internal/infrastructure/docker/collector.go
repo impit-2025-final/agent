@@ -51,10 +51,10 @@ func (c *Collector) Collect(ctx context.Context) (*domain.DockerInfo, error) {
 	containerInfos := make([]domain.ContainerInfo, 0, len(containers))
 	for _, container := range containers {
 		info := domain.ContainerInfo{
-			ID:     container.ID[:12],
-			Name:   container.Names[0][1:],
-			Status: container.Status,
-			Labels: container.Labels,
+			ContainerID:   container.ID[:12],
+			ContainerName: container.Names[0][1:],
+			Status:        container.Status,
+			Labels:        container.Labels,
 		}
 
 		containerDetails, err := c.client.ContainerInspect(ctx, container.ID)

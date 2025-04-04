@@ -10,8 +10,8 @@ type DockerInfo struct {
 }
 
 type ContainerInfo struct {
-	ID            string            `json:"id"`
-	Name          string            `json:"name"`
+	ContainerID   string            `json:"container_id"`
+	ContainerName string            `json:"container_name"`
 	IP            string            `json:"ip"`
 	Status        string            `json:"status"`
 	Labels        map[string]string `json:"labels"`

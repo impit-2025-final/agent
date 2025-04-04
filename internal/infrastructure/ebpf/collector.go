@@ -202,11 +202,11 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 
 		var containerID, containerName string
 		if container, found := c.containerCache[srcIP]; found {
-			containerID = container.ID
-			containerName = container.Name
+			containerID = container.ContainerID
+			containerName = container.ContainerName
 		} else if container, found := c.containerCache[dstIP]; found {
-			containerID = container.ID
-			containerName = container.Name
+			containerID = container.ContainerID
+			containerName = container.ContainerName
 		}
 
 		if containerID == "" && containerName == "" {
