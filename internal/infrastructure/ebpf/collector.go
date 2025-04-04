@@ -82,6 +82,10 @@ func (c *Collector) Collect(ctx context.Context) ([]domain.NetworkTraffic, error
 		return nil, fmt.Errorf("error: %w", err)
 	}
 
+	if err := c.cleanupOldEntries(); err != nil {
+		return nil, fmt.Errorf("error: %w", err)
+	}
+
 	interfaces, err := net.Interfaces()
 	if err != nil {
 		return nil, fmt.Errorf("error: %w", err)
@@ -223,4 +227,35 @@ func getProtocolName(proto uint8) string {
 	default:
 		return fmt.Sprintf("Unknown(%d)", proto)
 	}
+}
+
+func (c *Collector) cleanupOldEntries() error {
+	var key struct {
+		SrcIP    uint32
+		DstIP    uint32
+		Protocol uint8
+		Ifindex  uint32
+	}
+
+	var value struct {
+		Bytes      uint64
+		Packets    uint64
+		SrcPort    uint32
+		DstPort    uint32
+		LastUpdate uint64
+	}
+
+	iter := c.mapObj.Iterate()
+	for iter.Next(&key, &value) {
+		currentTime := uint64(time.Now().UnixNano())
+		maxAge := uint64(5 * time.Second)
+
+		if currentTime-value.LastUpdate > maxAge {
+			if err := c.mapObj.Delete(&key); err != nil {
+				return fmt.Errorf("error: %w", err)
+			}
+		}
+	}
+
+	return nil
 }
